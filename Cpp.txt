@@ -1,0 +1,6 @@
+C plus plus is a powerful high performance programming language that is widely used for developing system software games embedded systems and large scale applications. It was created as an extension of the C language and includes both low level and high level features. This makes it suitable for tasks that require direct access to hardware as well as for building complex software systems
+One of the key features of C plus plus is its support for object oriented programming. This allows developers to create classes objects and reuse code through inheritance and polymorphism. At the same time C plus plus provides the ability to use procedural programming which gives developers the flexibility to choose the best approach for each task
+C plus plus is known for giving programmers fine control over system resources including memory management. Developers can allocate and deallocate memory manually which is useful for performance critical applications but also requires careful handling to avoid errors
+The language is widely supported across different platforms and has a rich set of libraries and tools. Many operating systems device drivers and performance intensive applications are written in C plus plus due to its speed and efficiency
+Overall C plus plus is a versatile and robust language that remains highly relevant in modern software engineering
+

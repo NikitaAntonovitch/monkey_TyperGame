@@ -1,0 +1,14 @@
+# Target labels
+ sfml-populate
+# Source files and their labels
+D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-debug/_deps/sfml-subbuild/CMakeFiles/sfml-populate
+D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-debug/_deps/sfml-subbuild/CMakeFiles/sfml-populate.rule
+D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-debug/_deps/sfml-subbuild/CMakeFiles/sfml-populate-complete.rule
+D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-debug/_deps/sfml-subbuild/sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-build.rule
+D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-debug/_deps/sfml-subbuild/sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-configure.rule
+D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-debug/_deps/sfml-subbuild/sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-download.rule
+D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-debug/_deps/sfml-subbuild/sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-install.rule
+D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-debug/_deps/sfml-subbuild/sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-mkdir.rule
+D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-debug/_deps/sfml-subbuild/sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-patch.rule
+D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-debug/_deps/sfml-subbuild/sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-test.rule
+D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-debug/_deps/sfml-subbuild/sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-update.rule
