@@ -10,100 +10,11 @@
 
 using namespace std;
 
-/*std::string Destructor::promptUserName(sf::Font& font) {
-    sf::RenderWindow window(sf::VideoMode(400, 200), "Enter Your Name");
-    std::string name;
-
-    sf::Text prompt("Enter your name:", font, 30);
-    prompt.setFillColor(sf::Color::White);
-    prompt.setPosition(50, 30);
-
-    sf::Text nameText("", font, 30);
-    nameText.setFillColor(sf::Color::Yellow);
-    nameText.setPosition(50, 80);
-
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
-                window.close();
-                return "Player";  // default name if user closes
-            }
-
-            if (event.type == sf::Event::TextEntered) {
-                if (event.text.unicode == '\b' && !name.empty()) {
-                    name.pop_back();  // backspace
-                } else if (event.text.unicode >= 32 && event.text.unicode <= 126) {
-                    name += static_cast<char>(event.text.unicode);
-                }
-            }
-
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter && !name.empty()) {
-                window.close();
-                return name;
-            }
-        }
-
-        nameText.setString(name);
-
-        window.clear();
-        window.draw(prompt);
-        window.draw(nameText);
-        window.display();
-
-    }
-    return "Player";  // fallback
-}
-
-void Destructor::showWinScreen(sf::Font& font) {
-    sf::RenderWindow window(sf::VideoMode(400, 200), "Game Over");
-
-    sf::Text winText("You Won!", font, 40);
-    winText.setFillColor(sf::Color::Green);
-    winText.setPosition(100, 80);
-
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed ||
-                (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter)) {
-                window.close();
-            }
-        }
-
-        window.clear(sf::Color::Black);
-        window.draw(winText);
-        window.display();
-    }
-}
-
-void Destructor::showLoseScreen(sf::Font& font) {
-    sf::RenderWindow window(sf::VideoMode(400, 200), "Game Over");
-
-    sf::Text loseText("You Lose!", font, 40);
-    loseText.setFillColor(sf::Color::Red);
-    loseText.setPosition(100, 80);
-
-    while (window.isOpen()) {
-        sf::Event event;
-        while (window.pollEvent(event)) {
-            if (event.type == sf::Event::Closed ||
-                (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Enter)) {
-                window.close();
-            }
-        }
-
-        window.clear(sf::Color::Black);
-        window.draw(loseText);
-        window.display();
-    }
-}*/
-
 void loadWordsFromFile(const std::string& fileName, Configuration& config) {
     std::ifstream inputFile(fileName);
     if (inputFile.is_open()) {
         std::string word;
-        while (inputFile >> word) { // read words from file
+        while (inputFile >> word) {
             if (word.length() <= config.maxWordsLength)
                 config.topicWords.push_back(word);
         }
@@ -138,6 +49,7 @@ void displayResultsWindow(const std::string& resultsFile, const sf::Font& font) 
         }
 
         scoreWindow.clear(sf::Color::Black);
+        //todo: display only top 10 or top 20
         for (const auto& text : resultTexts) {
             scoreWindow.draw(text);
         }
@@ -145,48 +57,58 @@ void displayResultsWindow(const std::string& resultsFile, const sf::Font& font) 
     }
 }
 
-Result::Result(const std::string& playerName, int correct, int incorrect, int time)
-        : name(playerName), correctWords(correct), incorrectWords(incorrect), timePlayed(time) {}
-// write result to file
+Result::Result(const std::string& playerName, int correct, int incorrect, int time, int gameScore)
+        : name(playerName), correctWords(correct),
+            incorrectWords(incorrect), timePlayed(time), score(gameScore) {}
+
 void Result::saveToFile(const std::string& filename) const {
     std::ofstream file(filename, std::ios::app);
-    if (file.is_open()) {
-        file << "name: " << name << ", correctWords: " << correctWords << ", incorrectWords: " << incorrectWords << ", timePlayed: " << timePlayed << std::endl;
-        file.close();
-    } else {
+    if (!file) {
         std::cerr << "Unable to open file for saving results.\n";
+        return;
     }
+    file << toString() << '\n';
+}
+
+std::string Result::toString() const {
+    return "name: " + name +
+           ", correctWords: " + std::to_string(correctWords) +
+           ", incorrectWords: " + std::to_string(incorrectWords) +
+           ", timePlayed: " + std::to_string(timePlayed) +
+           ", score: " + std::to_string(score);
 }
 
 std::vector<Result> Result::loadFromFile(const std::string& filename) {
     std::vector<Result> results;
     std::ifstream file(filename);
+
     if (file.is_open()) {
         std::string line;
 
         while (std::getline(file, line)) {
             std::string playerName;
-            int correct = 0, incorrect = 0, time = 0;
-
-            // Expected format:
-            // name: Nikita, correctWords: 5, incorrectWords: 3, timePlayed: 20
+            int correct = 0, incorrect = 0, time = 0, score = 0;
+            float speed = 0.0f;
 
             std::size_t namePos = line.find("name: ");
             std::size_t correctPos = line.find("correctWords: ");
             std::size_t incorrectPos = line.find("incorrectWords: ");
             std::size_t timePos = line.find("timePlayed: ");
+            std::size_t scorePos = line.find("score: ");
 
             if (namePos != std::string::npos &&
                 correctPos != std::string::npos &&
                 incorrectPos != std::string::npos &&
-                timePos != std::string::npos) {
+                timePos != std::string::npos &&
+                scorePos != std::string::npos) {
 
                 playerName = line.substr(namePos + 6, correctPos - namePos - 8);
                 correct = std::stoi(line.substr(correctPos + 14, incorrectPos - correctPos - 16));
                 incorrect = std::stoi(line.substr(incorrectPos + 16, timePos - incorrectPos - 18));
-                time = std::stoi(line.substr(timePos + 12));
+                time = std::stoi(line.substr(timePos + 12, scorePos - timePos - 14));
+                score = std::stof(line.substr(scorePos + 7));
 
-                results.emplace_back(playerName, correct, incorrect, time);
+                results.emplace_back(playerName, correct, incorrect, time, score);
             }
         }
 
@@ -197,16 +119,10 @@ std::vector<Result> Result::loadFromFile(const std::string& filename) {
     return results;
 }
 
-std::string Result::toString() const {
-    return "name: " + name + ", " + "correctWords: " + std::to_string(correctWords) + ", incorrectWords: " + to_string(incorrectWords) + ", timePlayed: " +
-            to_string(timePlayed);
-}
-
-
 Game::Game(Configuration& configSets, const std::string& file)
         : config(configSets), resultFile(file),
           correctWordsCount(0), incorrectWordsCount(0),
-          timePlayed(0), speed(0.02f), inputBuffer(""),
+          timePlayed(0), speed(0.02f), score(0), inputBuffer(""),
           currentWordIndex(0) {}
 
 // method response by moving words
@@ -219,7 +135,8 @@ void Game::run() {
 
     setSpeed();//set speed according to configSets
 
-    sf::RenderWindow textWindow(sf::VideoMode(1200, 900), "MonkeyTyper - Game");
+    sf::RenderWindow textWindow(sf::VideoMode(1500, 900),
+                                "MonkeyTyper - Game", sf::Style::Titlebar | sf::Style::Close);
     sf::Clock gameClock;
 
     std::vector<sf::Text> wordTexts;
@@ -232,11 +149,11 @@ void Game::run() {
 
         sf::Text text(config.topicWords[idx], config.font, config.fontSize);
         text.setFillColor(sf::Color::White);
-        //todo: interval between words through X
         float x = (float)(std::rand() % (textWindow.getSize().x / 3));
-        float y = (float)(50 + std::rand() % (textWindow.getSize().y - 100 + 1));//todo make sure 50 points at header & 50 at footer are not used !!!
+        int maxAmountOfLines = (textWindow.getSize().y-100)/config.fontSize;//calc amount of lines on the screen with such font size
+        int lineIndex = rand() % maxAmountOfLines; // random line index from 0 to 19. (20 = 900-50+50/config.fontSize - amount of lines)
+        int y = 50 + lineIndex * config.fontSize; // starting from Y=50, step by 40
         text.setPosition(x, y);
-        //todo: calsulate positions of lines discretely
         wordTexts.push_back(text);
     }
 
@@ -246,25 +163,30 @@ void Game::run() {
             if (event.type == sf::Event::Closed) {
                 timePlayed = (int)(gameClock.getElapsedTime().asSeconds());
                 std::string name = askPlayerName();
-                Result(name, correctWordsCount, incorrectWordsCount, timePlayed).saveToFile(resultFile);
+                Result(name, correctWordsCount, incorrectWordsCount, timePlayed,
+                       score).saveToFile(resultFile);
                 textWindow.close();
             }
 
             if (event.type == sf::Event::TextEntered) {
-                char ch = (char)(event.text.unicode);
+                char ch = (char) (event.text.unicode);
                 if (ch == '\b' && !inputBuffer.empty()) {
                     inputBuffer.pop_back();
                 } else if (ch >= 32 && ch <= 126) {
                     inputBuffer += ch;
                 }
-                // Get position of first and (first + lettersToStrike) character
-                sf::Vector2f start = wordTexts[0].findCharacterPos(0);
-                int iLen = inputBuffer.length();
-                sf::Vector2f end = wordTexts[0].findCharacterPos(iLen);//inputBuffer.length()
-                float strikeWidth = end.x - start.x;
-                strikeLine.setSize(sf::Vector2f(strikeWidth, 5)); // 5 pixels thick
-                strikeLine.setPosition(wordTexts[0].getPosition().x,
-                                       wordTexts[0].getPosition().y + wordTexts[0].getCharacterSize() / 1.5); // mid-height
+                if (wordTexts[0].getString().find(inputBuffer, 0) == 0)
+                {
+                    // Get position of first and (first + lettersToStrike) character
+                    sf::Vector2f start = wordTexts[0].findCharacterPos(0);
+                    int iLen = inputBuffer.length();
+                    sf::Vector2f end = wordTexts[0].findCharacterPos(iLen);//inputBuffer.length()
+                    float strikeWidth = end.x - start.x;
+                    strikeLine.setSize(sf::Vector2f(strikeWidth, 5)); // 5 pixels thick
+                    strikeLine.setPosition(wordTexts[0].getPosition().x,
+                                           wordTexts[0].getPosition().y +
+                                           wordTexts[0].getCharacterSize() / 1.5); // mid-height
+                }
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
                 config.moveSpeed--;
@@ -289,10 +211,11 @@ void Game::run() {
         if (wordTexts.size() > 1) wordTexts[1].setFillColor(sf::Color::Yellow);
         if (wordTexts.size() > 2) wordTexts[2].setFillColor(sf::Color::Blue);
 
-        //check if typed word then erase it from the screen
+        //check if typed word (correctwords ++) then erase it from the screen
         if (!wordTexts.empty() && inputBuffer == wordTexts[0].getString()) {
             wordTexts.erase(wordTexts.begin());
             strikeLine.setSize(sf::Vector2f(0, 5));//erase strikethrough like
+            score += inputBuffer.length()*points_for_correct_letter*config.moveSpeed; //add points for the correct word
             inputBuffer.clear();
             correctWordsCount++;
 
@@ -304,6 +227,7 @@ void Game::run() {
 
         auto it = std::remove_if(wordTexts.begin(), wordTexts.end(), [&](sf::Text& text) {
             if (text.getPosition().x > textWindow.getSize().x) {
+                score -= text.getString().getSize()*points_for_incorrect_letter*config.moveSpeed; //penalty points for the correct word
                 incorrectWordsCount++;
                 if (incorrectWordsCount == 5) {
                     showLoseScreen(); //
@@ -344,7 +268,8 @@ void Game::run() {
         std::stringstream footer;
         footer << "Correct: " << correctWordsCount
                << "  Incorrect: " << incorrectWordsCount
-               << "  Time: " << secondsElapsed << "s";
+               << "  Time: " << secondsElapsed << "s"
+                << "  Score: " << score;
 
         sf::Text footerText(footer.str(), config.font, 30);
         footerText.setFillColor(sf::Color::White);
@@ -694,8 +619,6 @@ int Start::handleEvents() {
             //check buttons click
             if (levelOneBtn.getGlobalBounds().contains(mouseF))
                 return 1;
-//            if (levelTwoBtn.getGlobalBounds().contains(mouseF))
-//                return 2;
             if (scoreBtn.getGlobalBounds().contains(mouseF))
                 return 0;
         }
@@ -729,7 +652,6 @@ void Start::draw() {
     wordSizeDropdown.draw(window);
 
     window.draw(levelOneBtn);
-    //window.draw(levelTwoBtn);
     window.draw(scoreBtn);
 
     window.draw(levelOneText);

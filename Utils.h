@@ -66,6 +66,8 @@ public:
     void setSpeed();
 
 private:
+    const int points_for_correct_letter = 10;//amount of points for one letter in correct word
+    const int points_for_incorrect_letter = 5;//amount of penalty points for one letter when incorrect word
     sf::Text speedWordsLabel;
     std::vector<std::string> speedLabels = {"Slow", "Normal", "Fast"};
     Configuration& config;
@@ -74,6 +76,7 @@ private:
     int correctWordsCount;
     int incorrectWordsCount;
     int timePlayed;
+    int score;
     float speed;
     std::string inputBuffer;
     std::size_t currentWordIndex;
@@ -90,14 +93,12 @@ class Result {
     int correctWords;
     int incorrectWords;
     int timePlayed;
+    int score;
 
 public:
+    Result(const std::string &playerName, int correct, int incorrect, int time, int gameScore);
     static std::vector<Result> loadFromFile(const std::string& filename);
-
     std::string toString() const;
-
-    Result (const std::string& playerName = "Player", int correct = 0, int incorrect = 0, int time = 0);
-
     void saveToFile(const std::string& filename) const;
 };
 

@@ -19,7 +19,7 @@ auto main() -> int{
 
     while (mainWindow.isOpen()) {
 
-        int choice = confWindow.run(); // LoadSettings
+        int choice = confWindow.run(); // LoadSettings in Start window
         confWindow.LoadFont();//Load Font
         confWindow.LoadFontSize();//Load Font Size
         confWindow.LoadSpeedWords();//Load the speed of words
