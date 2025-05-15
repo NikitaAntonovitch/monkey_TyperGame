@@ -10,6 +10,26 @@
 #include "DropdownCtrl.h"
 #include "Configuration.h"
 
+// chose font
+enum Fonts {
+    RANDOM_WEDNESDAY,
+    TIMES,
+    VERDANA
+};
+
+enum WordSpeeds {
+    SLOW_1,
+    NORMAL_2,
+    FAST_3
+};
+
+// chose font size
+enum FontSizes {
+    SMALL,
+    MEDIUM,
+    LARGE
+};
+
 class Start {
 public:
     Start(sf::RenderWindow& window, Configuration& config);
@@ -47,6 +67,7 @@ public:
 
 private:
     sf::Text speedWordsLabel;
+    std::vector<std::string> speedLabels = {"Slow", "Normal", "Fast"};
     Configuration& config;
     std::string resultFile;
 
@@ -57,6 +78,7 @@ private:
     std::string inputBuffer;
     std::size_t currentWordIndex;
 
+    void drawStyledText();
     void showWinScreen();
     void showLoseScreen();
     std::string askPlayerName();

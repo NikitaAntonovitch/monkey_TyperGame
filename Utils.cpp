@@ -208,11 +208,12 @@ Game::Game(Configuration& configSets, const std::string& file)
           correctWordsCount(0), incorrectWordsCount(0),
           timePlayed(0), speed(0.02f), inputBuffer(""),
           currentWordIndex(0) {}
+
 // method response by moving words
 void Game::run() {
     speedWordsLabel.setFont(config.font);
     speedWordsLabel.setString("speed: " + std::to_string(speed)); // config.moveSpeed
-    speedWordsLabel.setCharacterSize(config.fontSize);
+    speedWordsLabel.setCharacterSize(30);
     speedWordsLabel.setFillColor(sf::Color::White);
     speedWordsLabel.setPosition(0, 0); // x, y
 
@@ -222,21 +223,20 @@ void Game::run() {
     sf::Clock gameClock;
 
     std::vector<sf::Text> wordTexts;
+    sf::RectangleShape strikeLine;//strikethrough the typed letters
 
     std::size_t numWordsToDisplay = 5 + std::rand() % 6;
 
     for (std::size_t i = 0; i < numWordsToDisplay; ++i) {
         std::size_t idx = currentWordIndex++ % config.topicWords.size();
-        //////////
-        //word inside config.topicWords[idx]. You need a new for through letters and create text control for each letter.
-        //positions x should include space between letters and increased letter by letter. y is the same.
 
         sf::Text text(config.topicWords[idx], config.font, config.fontSize);
         text.setFillColor(sf::Color::White);
+        //todo: interval between words through X
         float x = (float)(std::rand() % (textWindow.getSize().x / 3));
-        float y = (float)(std::rand() % (textWindow.getSize().y - 30));
+        float y = (float)(50 + std::rand() % (textWindow.getSize().y - 100 + 1));//todo make sure 50 points at header & 50 at footer are not used !!!
         text.setPosition(x, y);
-
+        //todo: calsulate positions of lines discretely
         wordTexts.push_back(text);
     }
 
@@ -257,12 +257,15 @@ void Game::run() {
                 } else if (ch >= 32 && ch <= 126) {
                     inputBuffer += ch;
                 }
+                // Get position of first and (first + lettersToStrike) character
+                sf::Vector2f start = wordTexts[0].findCharacterPos(0);
+                int iLen = inputBuffer.length();
+                sf::Vector2f end = wordTexts[0].findCharacterPos(iLen);//inputBuffer.length()
+                float strikeWidth = end.x - start.x;
+                strikeLine.setSize(sf::Vector2f(strikeWidth, 5)); // 5 pixels thick
+                strikeLine.setPosition(wordTexts[0].getPosition().x,
+                                       wordTexts[0].getPosition().y + wordTexts[0].getCharacterSize() / 1.5); // mid-height
             }
-        }
-        //animation to move words
-        for (auto& text : wordTexts) {
-            text.move(speed, 0.0f);
-
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
                 config.moveSpeed--;
                 setSpeed();
@@ -272,6 +275,11 @@ void Game::run() {
                 setSpeed();
             }
         }
+        //animation to move words
+        for (auto& text : wordTexts) {
+            text.move(speed, 0.0f);
+        }
+        strikeLine.move(speed, 0.0f);//move strikethrough line as well
 
         std::sort(wordTexts.begin(), wordTexts.end(), [](const sf::Text& a, const sf::Text& b) {
             return a.getPosition().x > b.getPosition().x;
@@ -281,8 +289,10 @@ void Game::run() {
         if (wordTexts.size() > 1) wordTexts[1].setFillColor(sf::Color::Yellow);
         if (wordTexts.size() > 2) wordTexts[2].setFillColor(sf::Color::Blue);
 
+        //check if typed word then erase it from the screen
         if (!wordTexts.empty() && inputBuffer == wordTexts[0].getString()) {
             wordTexts.erase(wordTexts.begin());
+            strikeLine.setSize(sf::Vector2f(0, 5));//erase strikethrough like
             inputBuffer.clear();
             correctWordsCount++;
 
@@ -317,15 +327,18 @@ void Game::run() {
 
         int secondsElapsed = (int)(gameClock.getElapsedTime().asSeconds());
 
+        //clear window
         textWindow.clear();
 
         for (const auto& text : wordTexts) {
             textWindow.draw(text);
         }
+        strikeLine.setFillColor(sf::Color::White);
+        textWindow.draw(strikeLine);
 
-        sf::Text inputText(inputBuffer, config.font, config.fontSize);
+        sf::Text inputText(inputBuffer, config.font, 30);
         inputText.setFillColor(sf::Color::Yellow);
-        inputText.setPosition(20, 850);
+        inputText.setPosition(500, 850);
         textWindow.draw(inputText);
 
         std::stringstream footer;
@@ -333,9 +346,9 @@ void Game::run() {
                << "  Incorrect: " << incorrectWordsCount
                << "  Time: " << secondsElapsed << "s";
 
-        sf::Text footerText(footer.str(), config.font, config.fontSize);
+        sf::Text footerText(footer.str(), config.font, 30);
         footerText.setFillColor(sf::Color::White);
-        footerText.setPosition(20, 870);
+        footerText.setPosition(20, 850);
         textWindow.draw(footerText);
 
         textWindow.draw(speedWordsLabel);
@@ -343,8 +356,11 @@ void Game::run() {
     }
 }
 
-void Game::setSpeed()
-{
+void Game::setSpeed() {
+    if (config.moveSpeed < 1)
+        config.moveSpeed = 1;
+    if (config.moveSpeed > speedLabels.size())
+        config.moveSpeed = speedLabels.size();
     switch (config.moveSpeed) {
         case 1:
             speed = 0.02f;
@@ -356,6 +372,7 @@ void Game::setSpeed()
             speed = 0.08f;
             break;
     }
+    speedWordsLabel.setString("Speed [press keys <- or ->]: " + speedLabels[config.moveSpeed-1]);
 }
 
 void Game::showWinScreen() {
@@ -443,34 +460,34 @@ Start::Start(sf::RenderWindow& win, Configuration& configSets)
     std::vector<std::string> topics = {"Cpp", "JAVA", "SQL"};
     std::vector<std::string> sizeLabels = {"Small", "Medium", "Large"};
     std::vector<std::string> speedLabels = {"Slow", "Normal", "Fast"};
-    std::vector<std::string> sizeOfWords = {"not more then 5 word", "not more than 10 word", "not more than 20 word"};
+    std::vector<std::string> sizeOfWords = {"<= 5 letters", "<= 10 letters", "<= 20 letters"};
 
     fontNameDropdownLabel.setFont(configSets.font);
-    fontNameDropdownLabel.setString("Chose font");
+    fontNameDropdownLabel.setString("choose font");
     fontNameDropdownLabel.setCharacterSize(20);
     fontNameDropdownLabel.setFillColor(sf::Color::White);
     fontNameDropdownLabel.setPosition(100, 177);
 
     fontSizeDropdownLabel.setFont(configSets.font);
-    fontSizeDropdownLabel.setString("Chose text size");
+    fontSizeDropdownLabel.setString("choose text size");
     fontSizeDropdownLabel.setCharacterSize(20);
     fontSizeDropdownLabel.setFillColor(sf::Color::White);
     fontSizeDropdownLabel.setPosition(320, 177);
 
     speedDropdownLabel.setFont(configSets.font);
-    speedDropdownLabel.setString("Chose speed moving words");
+    speedDropdownLabel.setString("choose speed moving words");
     speedDropdownLabel.setCharacterSize(20);
     speedDropdownLabel.setFillColor(sf::Color::White);
     speedDropdownLabel.setPosition(100, 377);
 
     topicDropdownLabel.setFont(configSets.font);
-    topicDropdownLabel.setString("Chose topic of the text");
+    topicDropdownLabel.setString("choose topic of the text");
     topicDropdownLabel.setCharacterSize(20);
     topicDropdownLabel.setFillColor(sf::Color::White);
     topicDropdownLabel.setPosition(100, 577);
 
     wordSizeLabel.setFont(configSets.font);
-    wordSizeLabel.setString("Chose words size");
+    wordSizeLabel.setString("choose words size");
     wordSizeLabel.setCharacterSize(20);
     wordSizeLabel.setFillColor(sf::Color::White);
     wordSizeLabel.setPosition(350, 577);
@@ -490,20 +507,10 @@ Start::Start(sf::RenderWindow& win, Configuration& configSets)
     panelButtons.setPosition(700, 0);
     panelButtons.setFillColor(sf::Color::Magenta);
 
-/*
-    panelButtons.setSize(sf::Vector2f(10, 900));
-    panelButtons.setPosition(700, 0);
-    panelButtons.setFillColor(sf::Color::Magenta);
-*/
-
     // Initialize buttons
     levelOneBtn.setSize(sf::Vector2f(200, 50));
     levelOneBtn.setPosition(950, 300);
     levelOneBtn.setFillColor(sf::Color::Green);
-
-//    levelTwoBtn.setSize(sf::Vector2f(200, 50));
-//    levelTwoBtn.setPosition(950, 450);
-//    levelTwoBtn.setFillColor(sf::Color::Green);
 
     scoreBtn.setSize(sf::Vector2f(200, 50));
     scoreBtn.setPosition(950, 600);
@@ -512,7 +519,7 @@ Start::Start(sf::RenderWindow& win, Configuration& configSets)
     configLabel.setFont(configSets.font);
     configLabel.setString("Configuration");
     configLabel.setCharacterSize(20);
-    configLabel.setFillColor(sf::Color::Cyan);
+    configLabel.setFillColor(sf::Color::White);
     configLabel.setPosition(350, 50);
 
     buttonLabel.setFont(configSets.font);
@@ -528,12 +535,6 @@ Start::Start(sf::RenderWindow& win, Configuration& configSets)
     levelOneText.setPosition(950, 310);
     levelOneText.setFillColor(sf::Color::White);
 
-    /*levelTwoText.setFont(configSets.font);
-    levelTwoText.setCharacterSize(30);
-    levelTwoText.setString("Level 2");
-    levelTwoText.setPosition(950, 460);
-    levelTwoText.setFillColor(sf::Color::White);
-*/
     scoreText.setFont(configSets.font);
     scoreText.setCharacterSize(30);
     scoreText.setString("Score");
@@ -551,12 +552,6 @@ int Start::run() {
     }
     return -1; // window closed
 }
-// chose font
-enum Fonts {
-    RANDOM_WEDNESDAY,
-    TIMES,
-    VERDANA
-};
 
 const std::string fontFiles[] = {
         "../Random Wednesday.ttf",
@@ -579,12 +574,6 @@ void Start::LoadFont() {
             break;
     }
 }
-// chose font size
-enum FontSizes {
-    SMALL,
-    MEDIUM,
-    LARGE
-};
 
 void Start::LoadFontSize() {
     int selectedIndex = fontSizeDropdown.getSelectedIndex();
@@ -603,12 +592,7 @@ void Start::LoadFontSize() {
             break;
     }
 }
-// chose words speed
-enum WordSpeeds {
-    SLOW_1,
-    NORMAL_2,
-    FAST_3
-};
+// choose words speed
 
 void Start::LoadSpeedWords() {
     int selectedIndex = speedDropdown.getSelectedIndex();
@@ -629,7 +613,7 @@ void Start::LoadSpeedWords() {
     }
 }
 
-// chose max words length
+// choose max words length
 enum WordSizes {
     SHORT_5,
     MEDIUM_10,
@@ -655,7 +639,7 @@ void Start::LoadMaxWordsLength() {
     }
 }
 
-// chose topic
+// choose topic
 enum Topics {
     CPP,
     JAVA,
