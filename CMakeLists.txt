@@ -35,3 +35,11 @@ target_link_libraries(monkey_TyperGame
 
 # Include current dir for headers
 target_include_directories(monkey_TyperGame PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+target_compile_definitions(monkey_TyperGame PRIVATE SFML_STATIC)
+
+target_link_options(monkey_TyperGame PRIVATE
+        -static
+        -static-libgcc
+        -static-libstdc++
+)

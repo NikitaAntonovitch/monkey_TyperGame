@@ -91,6 +91,7 @@ build CMakeFiles/monkey_TyperGame.dir/Configuration.cpp.obj: CXX_COMPILER__monke
 
 build monkey_TyperGame.exe: CXX_EXECUTABLE_LINKER__monkey_TyperGame_Debug CMakeFiles/monkey_TyperGame.dir/main.cpp.obj CMakeFiles/monkey_TyperGame.dir/Utils.cpp.obj CMakeFiles/monkey_TyperGame.dir/DropdownCtrl.cpp.obj CMakeFiles/monkey_TyperGame.dir/Configuration.cpp.obj | _deps/sfml-build/lib/libsfml-graphics-s-d.a _deps/sfml-build/lib/libsfml-window-s-d.a _deps/sfml-build/lib/libsfml-system-s-d.a _deps/sfml-src/extlibs/libs-mingw/x64/libfreetype.a || _deps/sfml-build/lib/libsfml-graphics-s-d.a _deps/sfml-build/lib/libsfml-system-s-d.a _deps/sfml-build/lib/libsfml-window-s-d.a
   FLAGS = -g
+  LINK_FLAGS = -static -static-libgcc -static-libstdc++
   LINK_LIBRARIES = _deps/sfml-build/lib/libsfml-graphics-s-d.a  _deps/sfml-build/lib/libsfml-window-s-d.a  _deps/sfml-build/lib/libsfml-system-s-d.a  -lopengl32  -lwinmm  -lgdi32  _deps/sfml-src/extlibs/libs-mingw/x64/libfreetype.a  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\monkey_TyperGame.dir
   POST_BUILD = cd .

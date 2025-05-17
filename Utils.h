@@ -30,6 +30,21 @@ enum FontSizes {
     LARGE
 };
 
+// choose topic
+enum Topics {
+    CPP,
+    JAVA,
+    SQL
+};
+
+// choose max words length
+enum WordSizes {
+    SHORT_5,
+    MEDIUM_10,
+    LONG_20
+};
+
+
 class Start {
 public:
     Start(sf::RenderWindow& window, Configuration& config);

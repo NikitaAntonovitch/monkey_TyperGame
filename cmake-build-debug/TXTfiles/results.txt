@@ -1,0 +1,21 @@
+name: Player, correctWords: 1, incorrectWords: 0, timePlayed: 20, score: -75
+name: Vlad, correctWords: 3, incorrectWords: 0, timePlayed: 12, score: 70
+name: Vlad 2, correctWords: 19, incorrectWords: 4, timePlayed: 70, score: 845
+name: Player, correctWords: 0, incorrectWords: 0, timePlayed: 7, score: 0
+name: Player, correctWords: 0, incorrectWords: 0, timePlayed: 4, score: 0
+name: Player, correctWords: 0, incorrectWords: 0, timePlayed: 6, score: 0
+name: Vlad3, correctWords: 12, incorrectWords: 0, timePlayed: 56, score: 390
+name: Player, correctWords: 0, incorrectWords: 0, timePlayed: 20, score: 0
+name: Player, correctWords: 0, incorrectWords: 0, timePlayed: 6, score: 0
+name: Player, correctWords: 0, incorrectWords: 0, timePlayed: 4, score: 0
+name: Andrew, correctWords: 61, incorrectWords: 3, timePlayed: 178, score: 2950
+name: Player, correctWords: 0, incorrectWords: 0, timePlayed: 6, score: 0
+name: Player, correctWords: 0, incorrectWords: 0, timePlayed: 2, score: 0
+name: Player, correctWords: 0, incorrectWords: 0, timePlayed: 11, score: 0
+name: Player, correctWords: 0, incorrectWords: 0, timePlayed: 9, score: 0
+name: Vlad, correctWords: 0, incorrectWords: 0, timePlayed: 5, score: 0
+name: Player, correctWords: 11, incorrectWords: 0, timePlayed: 38, score: 520
+name: Player, correctWords: 0, incorrectWords: 0, timePlayed: 3, score: 0
+name: Player, correctWords: 0, incorrectWords: 0, timePlayed: 3, score: 0
+name: hh, correctWords: 0, incorrectWords: 0, timePlayed: 3, score: 0
+name: dff, correctWords: 1, incorrectWords: 0, timePlayed: 3, score: 10

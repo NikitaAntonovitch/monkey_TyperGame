@@ -10,7 +10,7 @@
 
 using namespace std;
 
-void loadWordsFromFile(const std::string& fileName, Configuration& config) {
+void loadWordsFromFile(const std::string& fileName, Configuration& config) { // read words for game from file
     std::ifstream inputFile(fileName);
     if (inputFile.is_open()) {
         std::string word;
@@ -26,7 +26,7 @@ void loadWordsFromFile(const std::string& fileName, Configuration& config) {
 }
 
 // Optional: display results window, on dialog window
-void displayResultsWindow(const std::string& resultsFile, const sf::Font& font) {
+void displayResultsWindow(const std::string& resultsFile, const sf::Font& font) { // display window with scores
     std::vector<Result> results = Result::loadFromFile(resultsFile);
     sf::RenderWindow scoreWindow(sf::VideoMode(800, 400), "Game Scores", sf::Style::Close);
 
@@ -49,7 +49,6 @@ void displayResultsWindow(const std::string& resultsFile, const sf::Font& font) 
         }
 
         scoreWindow.clear(sf::Color::Black);
-        //todo: display only top 10 or top 20
         for (const auto& text : resultTexts) {
             scoreWindow.draw(text);
         }
@@ -61,7 +60,7 @@ Result::Result(const std::string& playerName, int correct, int incorrect, int ti
         : name(playerName), correctWords(correct),
             incorrectWords(incorrect), timePlayed(time), score(gameScore) {}
 
-void Result::saveToFile(const std::string& filename) const {
+void Result::saveToFile(const std::string& filename) const { // write result to file
     std::ofstream file(filename, std::ios::app);
     if (!file) {
         std::cerr << "Unable to open file for saving results.\n";
@@ -78,14 +77,18 @@ std::string Result::toString() const {
            ", score: " + std::to_string(score);
 }
 
-std::vector<Result> Result::loadFromFile(const std::string& filename) {
+std::vector<Result> Result::loadFromFile(const std::string& filename) {  // read results from file, sort them, show only top 10, if you want see more open file
     std::vector<Result> results;
     std::ifstream file(filename);
 
     if (file.is_open()) {
         std::string line;
 
+        int i = 0;
         while (std::getline(file, line)) {
+            if (i >= 10) {
+                break;
+            }
             std::string playerName;
             int correct = 0, incorrect = 0, time = 0, score = 0;
             float speed = 0.0f;
@@ -110,12 +113,19 @@ std::vector<Result> Result::loadFromFile(const std::string& filename) {
 
                 results.emplace_back(playerName, correct, incorrect, time, score);
             }
+            i++;
         }
 
         file.close();
     } else {
         std::cerr << "Unable to open file for loading results.\n";
     }
+
+    // Sort by score descending
+    std::sort(results.begin(), results.end(), [](const Result& a, const Result& b) {
+        return a.score > b.score;
+    });
+
     return results;
 }
 
@@ -140,17 +150,18 @@ void Game::run() {
     sf::Clock gameClock;
 
     std::vector<sf::Text> wordTexts;
-    sf::RectangleShape strikeLine;//strikethrough the typed letters
+    sf::RectangleShape strikeLine;//strikethrough the typed letters (strike out the word)
 
-    std::size_t numWordsToDisplay = 5 + std::rand() % 6;
+    std::size_t numWordsToDisplay = 5 + std::rand() % 6; // count of words on display
 
+    // create unvisible lines to avoid unclear words
     for (std::size_t i = 0; i < numWordsToDisplay; ++i) {
         std::size_t idx = currentWordIndex++ % config.topicWords.size();
 
         sf::Text text(config.topicWords[idx], config.font, config.fontSize);
         text.setFillColor(sf::Color::White);
         float x = (float)(std::rand() % (textWindow.getSize().x / 3));
-        int maxAmountOfLines = (textWindow.getSize().y-100)/config.fontSize;//calc amount of lines on the screen with such font size
+        int maxAmountOfLines = ((textWindow.getSize().y-100)/config.fontSize) - 1;//calc amount of lines on the screen with such font size
         int lineIndex = rand() % maxAmountOfLines; // random line index from 0 to 19. (20 = 900-50+50/config.fontSize - amount of lines)
         int y = 50 + lineIndex * config.fontSize; // starting from Y=50, step by 40
         text.setPosition(x, y);
@@ -175,8 +186,7 @@ void Game::run() {
                 } else if (ch >= 32 && ch <= 126) {
                     inputBuffer += ch;
                 }
-                if (wordTexts[0].getString().find(inputBuffer, 0) == 0)
-                {
+                if (wordTexts[0].getString().find(inputBuffer, 0) == 0) {
                     // Get position of first and (first + lettersToStrike) character
                     sf::Vector2f start = wordTexts[0].findCharacterPos(0);
                     int iLen = inputBuffer.length();
@@ -211,11 +221,11 @@ void Game::run() {
         if (wordTexts.size() > 1) wordTexts[1].setFillColor(sf::Color::Yellow);
         if (wordTexts.size() > 2) wordTexts[2].setFillColor(sf::Color::Blue);
 
-        //check if typed word (correctwords ++) then erase it from the screen
+        //check if typed word (correctwords ++)
         if (!wordTexts.empty() && inputBuffer == wordTexts[0].getString()) {
             wordTexts.erase(wordTexts.begin());
             strikeLine.setSize(sf::Vector2f(0, 5));//erase strikethrough like
-            score += inputBuffer.length()*points_for_correct_letter*config.moveSpeed; //add points for the correct word
+            score += inputBuffer.length() * points_for_correct_letter * config.moveSpeed; //add points for the correct word
             inputBuffer.clear();
             correctWordsCount++;
 
@@ -224,10 +234,10 @@ void Game::run() {
                 textWindow.close();
             }
         }
-
+        // then erase word from the screen
         auto it = std::remove_if(wordTexts.begin(), wordTexts.end(), [&](sf::Text& text) {
             if (text.getPosition().x > textWindow.getSize().x) {
-                score -= text.getString().getSize()*points_for_incorrect_letter*config.moveSpeed; //penalty points for the correct word
+                score -= text.getString().getSize() * points_for_incorrect_letter * config.moveSpeed; //penalty points for the correct word
                 incorrectWordsCount++;
                 if (incorrectWordsCount == 5) {
                     showLoseScreen(); //
@@ -239,6 +249,7 @@ void Game::run() {
         });
         wordTexts.erase(it, wordTexts.end());
 
+        // display words only correct length
         while (wordTexts.size() < numWordsToDisplay) {
             std::size_t idx = currentWordIndex++ % config.topicWords.size();
             sf::Text text(config.topicWords[idx], config.font, config.fontSize);
@@ -262,7 +273,7 @@ void Game::run() {
 
         sf::Text inputText(inputBuffer, config.font, 30);
         inputText.setFillColor(sf::Color::Yellow);
-        inputText.setPosition(500, 850);
+        inputText.setPosition(800, 850);
         textWindow.draw(inputText);
 
         std::stringstream footer;
@@ -300,7 +311,7 @@ void Game::setSpeed() {
     speedWordsLabel.setString("Speed [press keys <- or ->]: " + speedLabels[config.moveSpeed-1]);
 }
 
-void Game::showWinScreen() {
+void Game::showWinScreen() { // display dialog win information in the end of game
     sf::RenderWindow winWindow(sf::VideoMode(400, 200), "Game Over");
     sf::Text winText("You Won!", config.font, config.fontSize);
     winText.setFillColor(sf::Color::Green);
@@ -318,7 +329,7 @@ void Game::showWinScreen() {
     }
 }
 
-void Game::showLoseScreen() {
+void Game::showLoseScreen() { // display dialog lose information
     sf::RenderWindow loseWindow(sf::VideoMode(400, 200), "Game Over");
     sf::Text loseText("You Lose!", config.font, config.fontSize);
     loseText.setFillColor(sf::Color::Red);
@@ -336,14 +347,14 @@ void Game::showLoseScreen() {
     }
 }
 
-std::string Game::askPlayerName() {
-    sf::RenderWindow nameWindow(sf::VideoMode(400, 200), "Enter Your Name");
+std::string Game::askPlayerName() { // ask user name to save the result
+    sf::RenderWindow nameWindow(sf::VideoMode(450, 200), "Enter Your Name");
     std::string name;
-    sf::Text prompt("Enter your name:", config.font, config.fontSize);
+    sf::Text prompt("Enter your name:", config.font, 40);
     prompt.setFillColor(sf::Color::White);
     prompt.setPosition(50, 30);
 
-    sf::Text nameText("", config.font, config.fontSize);
+    sf::Text nameText("", config.font, 40);
     nameText.setFillColor(sf::Color::Yellow);
     nameText.setPosition(50, 80);
 
@@ -381,6 +392,7 @@ std::string Game::askPlayerName() {
 
 Start::Start(sf::RenderWindow& win, Configuration& configSets)
         : window(win), configSets(configSets){
+    // initialise variables
     std::vector<std::string> fontNames = {"Random Wednesday", "Times", "Verdana"};
     std::vector<std::string> topics = {"Cpp", "JAVA", "SQL"};
     std::vector<std::string> sizeLabels = {"Small", "Medium", "Large"};
@@ -467,21 +479,20 @@ Start::Start(sf::RenderWindow& win, Configuration& configSets)
     scoreText.setFillColor(sf::Color::White);
 }
 
+// execute pressing buttons
 int Start::run() {
     while (window.isOpen()) {
         int action = handleEvents(); // process buttons
-
         if (action != -1) return action;
-
         draw();
     }
     return -1; // window closed
 }
 
 const std::string fontFiles[] = {
-        "../Random Wednesday.ttf",
-        "../times.ttf",
-        "../verdana.ttf"
+        "FONTfiles/Random Wednesday.ttf",
+        "FONTfiles/times.ttf",
+        "FONTfiles/verdana.ttf"
 };
 
 void Start::LoadFont() {
@@ -538,13 +549,6 @@ void Start::LoadSpeedWords() {
     }
 }
 
-// choose max words length
-enum WordSizes {
-    SHORT_5,
-    MEDIUM_10,
-    LONG_20
-};
-
 void Start::LoadMaxWordsLength() {
     int selectedIndex = wordSizeDropdown.getSelectedIndex();
 
@@ -564,26 +568,19 @@ void Start::LoadMaxWordsLength() {
     }
 }
 
-// choose topic
-enum Topics {
-    CPP,
-    JAVA,
-    SQL
-};
-
 std::string Start::LoadTopicWords() {
     std::string path;
     int selectedIndex = topicDropdown.getSelectedIndex();
 
     switch (selectedIndex) {
         case CPP:
-            path = "../Cpp.txt";
+            path = "TXTfiles/Cpp.txt";
             break;
         case JAVA:
-            path = "../JAVA.txt";
+            path = "TXTfiles/JAVA.txt";
             break;
         case SQL:
-            path = "../SQL.txt";
+            path = "TXTfiles/SQL.txt";
             break;
         default:
             std::cerr << "Selected topic index is invalid.\n";
@@ -626,7 +623,7 @@ int Start::handleEvents() {
     return -1;
 }
 
-void Start::draw() {
+void Start::draw() { // draw everything
     window.clear();
 
     window.draw(panelConfigText);

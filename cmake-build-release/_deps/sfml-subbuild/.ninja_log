@@ -1,0 +1,21 @@
+# ninja log v5
+1	55	7691255951221343	sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-mkdir	c9343e9fd9957f4f
+1	55	7691255951221343	D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-release/_deps/sfml-subbuild/sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-mkdir	c9343e9fd9957f4f
+55	20704	7691256157713023	sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-download	3ae94f8eff8a244a
+55	20704	7691256157713023	D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-release/_deps/sfml-subbuild/sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-download	3ae94f8eff8a244a
+20704	20850	0	sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-update	adeff7dd3c1fbe7c
+20704	20850	0	D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-release/_deps/sfml-subbuild/sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-update	adeff7dd3c1fbe7c
+20850	20900	7691256159660107	sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-patch	d71584c0f2ad1f2c
+20850	20900	7691256159660107	D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-release/_deps/sfml-subbuild/sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-patch	d71584c0f2ad1f2c
+20900	20951	7691256160169881	sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-configure	2ba829f70a13432e
+20900	20951	7691256160169881	D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-release/_deps/sfml-subbuild/sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-configure	2ba829f70a13432e
+20951	21000	7691256160675054	sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-build	478f964a5176a865
+20951	21000	7691256160675054	D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-release/_deps/sfml-subbuild/sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-build	478f964a5176a865
+21000	21049	7691256161158101	sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-install	c75a4241c940ef57
+21000	21049	7691256161158101	D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-release/_deps/sfml-subbuild/sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-install	c75a4241c940ef57
+21049	21097	7691256161636314	sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-test	b1f520d0068dac78
+21049	21097	7691256161636314	D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-release/_deps/sfml-subbuild/sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-test	b1f520d0068dac78
+21097	21161	7691256162281993	CMakeFiles/sfml-populate-complete	af9810f5d94664a
+21097	21161	7691256162281993	sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-done	af9810f5d94664a
+21097	21161	7691256162281993	D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-release/_deps/sfml-subbuild/CMakeFiles/sfml-populate-complete	af9810f5d94664a
+21097	21161	7691256162281993	D:/4work/study/Project2_C++/monkey_TyperGame/cmake-build-release/_deps/sfml-subbuild/sfml-populate-prefix/src/sfml-populate-stamp/sfml-populate-done	af9810f5d94664a

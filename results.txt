@@ -1,9 +1,0 @@
-name: Player, correctWords: 1, incorrectWords: 0, timePlayed: 20, score: -75
-name: Vlad, correctWords: 3, incorrectWords: 0, timePlayed: 12, score: 70
-name: Vlad 2, correctWords: 19, incorrectWords: 4, timePlayed: 70, score: 845
-name: Player, correctWords: 0, incorrectWords: 0, timePlayed: 7, score: 0
-name: Player, correctWords: 0, incorrectWords: 0, timePlayed: 4, score: 0
-name: Player, correctWords: 0, incorrectWords: 0, timePlayed: 6, score: 0
-name: Vlad3, correctWords: 12, incorrectWords: 0, timePlayed: 56, score: 390
-name: Player, correctWords: 0, incorrectWords: 0, timePlayed: 20, score: 0
-name: Player, correctWords: 0, incorrectWords: 0, timePlayed: 6, score: 0
