@@ -9,6 +9,7 @@
 class Configuration {
 public:
     sf::Font font;
+    std::string fontFile; // path to font for saving/loading
     int fontSize;
     int maxWordsLength;
     int moveSpeed;

@@ -62,8 +62,8 @@ private:
     // labels
     sf::Text fontNameDropdownLabel, fontSizeDropdownLabel, speedDropdownLabel, topicDropdownLabel, wordSizeLabel, configLabel, buttonLabel;
 
-    sf::RectangleShape levelOneBtn, levelTwoBtn, scoreBtn, panelConfig, panelButtons;
-    sf::Text levelOneText, levelTwoText, scoreText, panelConfigText, panelButtonsText;
+    sf::RectangleShape levelOneBtn, levelTwoBtn, scoreBtn, continueBtn, panelConfig, panelButtons;
+    sf::Text levelOneText, levelTwoText, scoreText, continueText, panelConfigText, panelButtonsText;
     DropdownCtrl fontNameDropdown;
     DropdownCtrl fontSizeDropdown;
     DropdownCtrl speedDropdown;
@@ -77,8 +77,11 @@ private:
 class Game {
 public:
     Game(Configuration& config, const std::string& resultsFile);
-    void run();
+    void run(bool resume = false);
     void setSpeed();
+    void saveState(const std::vector<sf::Text>& wordTexts, int elapsedSeconds);
+    bool loadState(std::vector<sf::Text>& wordTexts);
+    static bool hasSavedGame(const std::string& filename);
 
 private:
     const int points_for_correct_letter = 10;//amount of points for one letter in correct word
