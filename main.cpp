@@ -9,7 +9,8 @@ auto main() -> int{
                                 sf::Style::Titlebar | sf::Style::Close);
 
     Configuration config;//keep configuration settings
-    config.font.loadFromFile("FONTfiles/arial.ttf");//load default system font
+    config.fontFile = "FONTfiles/arial.ttf";
+    config.font.loadFromFile(config.fontFile);//load default system font
     config.fontSize = 40;//font size by default
 
     const std::string resultsFile = "FONTfiles/results.txt";
@@ -27,8 +28,11 @@ auto main() -> int{
         if (choice == 1) { // game
             if (!config.topicWords.empty()) {
                 Game game(config, resultsFile);
-                game.run();
+                game.run(false);
             }
+        } else if (choice == 2) { // continue saved game
+            Game game(config, resultsFile);
+            game.run(true);
         } else if (choice == 0) { // result
             displayResultsWindow(resultsFile, config.font);
         } else {
