@@ -190,7 +190,7 @@ void Game::run(bool resume) {
                 textWindow.close();
             }
 
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P) {
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space) {
                 saveState(wordTexts, (int)gameClock.getElapsedTime().asSeconds());
                 textWindow.close();
             }
