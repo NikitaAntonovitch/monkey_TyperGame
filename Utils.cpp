@@ -7,8 +7,11 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <cstdio>
 
 using namespace std;
+
+static const std::string SAVE_FILE = "savegame.txt";
 
 void loadWordsFromFile(const std::string& fileName, Configuration& config) { // read words for game from file
     std::ifstream inputFile(fileName);
@@ -133,17 +136,19 @@ Game::Game(Configuration& configSets, const std::string& file)
         : config(configSets), resultFile(file),
           correctWordsCount(0), incorrectWordsCount(0),
           timePlayed(0), speed(0.02f), score(0), inputBuffer(""),
-          currentWordIndex(0) {}
+          currentWordIndex(0) {
+    if (!config.fontFile.empty()) {
+        config.font.loadFromFile(config.fontFile);
+    }
+}
 
 // method response by moving words
-void Game::run() {
+void Game::run(bool resume) {
     speedWordsLabel.setFont(config.font);
     speedWordsLabel.setString("speed: " + std::to_string(speed)); // config.moveSpeed
     speedWordsLabel.setCharacterSize(30);
     speedWordsLabel.setFillColor(sf::Color::White);
     speedWordsLabel.setPosition(0, 0); // x, y
-
-    setSpeed();//set speed according to configSets
 
     sf::RenderWindow textWindow(sf::VideoMode(1500, 900),
                                 "MonkeyTyper - Game", sf::Style::Titlebar | sf::Style::Close);
@@ -151,31 +156,42 @@ void Game::run() {
 
     std::vector<sf::Text> wordTexts;
     sf::RectangleShape strikeLine;//strikethrough the typed letters (strike out the word)
-
     std::size_t numWordsToDisplay = 5 + std::rand() % 6; // count of words on display
 
-    // create unvisible lines to avoid unclear words
-    for (std::size_t i = 0; i < numWordsToDisplay; ++i) {
-        std::size_t idx = currentWordIndex++ % config.topicWords.size();
+    if (resume && loadState(wordTexts)) {
+        numWordsToDisplay = wordTexts.size();
+    } else {
+        // create unvisible lines to avoid unclear words
+        for (std::size_t i = 0; i < numWordsToDisplay; ++i) {
+            std::size_t idx = currentWordIndex++ % config.topicWords.size();
 
-        sf::Text text(config.topicWords[idx], config.font, config.fontSize);
-        text.setFillColor(sf::Color::White);
-        float x = (float)(std::rand() % (textWindow.getSize().x / 3));
-        int maxAmountOfLines = ((textWindow.getSize().y-100)/config.fontSize) - 1;//calc amount of lines on the screen with such font size
-        int lineIndex = rand() % maxAmountOfLines; // random line index from 0 to 19. (20 = 900-50+50/config.fontSize - amount of lines)
-        int y = 50 + lineIndex * config.fontSize; // starting from Y=50, step by 40
-        text.setPosition(x, y);
-        wordTexts.push_back(text);
+            sf::Text text(config.topicWords[idx], config.font, config.fontSize);
+            text.setFillColor(sf::Color::White);
+            float x = (float)(std::rand() % (textWindow.getSize().x / 3));
+            int maxAmountOfLines = ((textWindow.getSize().y-100)/config.fontSize) - 1;
+            int lineIndex = rand() % maxAmountOfLines;
+            int y = 50 + lineIndex * config.fontSize;
+            text.setPosition(x, y);
+            wordTexts.push_back(text);
+        }
     }
+
+    setSpeed();//set speed according to configSets
 
     while (textWindow.isOpen()) {
         sf::Event event;
         while (textWindow.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
-                timePlayed = (int)(gameClock.getElapsedTime().asSeconds());
+                timePlayed += (int)(gameClock.getElapsedTime().asSeconds());
                 std::string name = askPlayerName();
                 Result(name, correctWordsCount, incorrectWordsCount, timePlayed,
                        score).saveToFile(resultFile);
+                std::remove(SAVE_FILE.c_str());
+                textWindow.close();
+            }
+
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::P) {
+                saveState(wordTexts, (int)gameClock.getElapsedTime().asSeconds());
                 textWindow.close();
             }
 
@@ -231,6 +247,7 @@ void Game::run() {
 
             if (correctWordsCount >= config.topicWords.size()) {
                 showWinScreen();
+                std::remove(SAVE_FILE.c_str());
                 textWindow.close();
             }
         }
@@ -241,6 +258,7 @@ void Game::run() {
                 incorrectWordsCount++;
                 if (incorrectWordsCount == 5) {
                     showLoseScreen(); //
+                    std::remove(SAVE_FILE.c_str());
                     textWindow.close();
                 }
                 return true;
@@ -260,7 +278,7 @@ void Game::run() {
             wordTexts.push_back(text);
         }
 
-        int secondsElapsed = (int)(gameClock.getElapsedTime().asSeconds());
+        int secondsElapsed = timePlayed + (int)(gameClock.getElapsedTime().asSeconds());
 
         //clear window
         textWindow.clear();
@@ -390,6 +408,53 @@ std::string Game::askPlayerName() { // ask user name to save the result
     return "Player";
 }
 
+void Game::saveState(const std::vector<sf::Text>& wordTexts, int elapsedSeconds) {
+    std::ofstream out(SAVE_FILE);
+    if (!out) return;
+    out << config.fontFile << '\n';
+    out << config.fontSize << ' ' << config.maxWordsLength << ' ' << config.moveSpeed << '\n';
+    out << config.topicWords.size() << '\n';
+    for (const auto& w : config.topicWords) out << w << '\n';
+    out << correctWordsCount << ' ' << incorrectWordsCount << ' ' << currentWordIndex << ' ' << score << ' ' << (timePlayed + elapsedSeconds) << ' ' << speed << '\n';
+    out << inputBuffer << '\n';
+    out << wordTexts.size() << '\n';
+    for (const auto& t : wordTexts) {
+        out << t.getString().toAnsiString() << ' ' << t.getPosition().x << ' ' << t.getPosition().y << '\n';
+    }
+}
+
+bool Game::loadState(std::vector<sf::Text>& wordTexts) {
+    std::ifstream in(SAVE_FILE);
+    if (!in) return false;
+    std::getline(in, config.fontFile);
+    config.font.loadFromFile(config.fontFile);
+    in >> config.fontSize >> config.maxWordsLength >> config.moveSpeed;
+    size_t topicCount; in >> topicCount;
+    std::string dummy; std::getline(in, dummy); // consume endline
+    config.topicWords.clear();
+    for (size_t i=0;i<topicCount;i++) {
+        std::string w; std::getline(in, w); config.topicWords.push_back(w);
+    }
+    in >> correctWordsCount >> incorrectWordsCount >> currentWordIndex >> score >> timePlayed >> speed;
+    std::getline(in, dummy); // consume endline
+    std::getline(in, inputBuffer);
+    size_t wordsNum; in >> wordsNum;
+    wordTexts.clear();
+    for (size_t i=0;i<wordsNum;i++) {
+        std::string word; float x,y; in >> word >> x >> y;
+        sf::Text t(word, config.font, config.fontSize);
+        t.setFillColor(sf::Color::White);
+        t.setPosition(x,y);
+        wordTexts.push_back(t);
+    }
+    return true;
+}
+
+bool Game::hasSavedGame(const std::string& filename) {
+    std::ifstream f(filename);
+    return f.good();
+}
+
 Start::Start(sf::RenderWindow& win, Configuration& configSets)
         : window(win), configSets(configSets){
     // initialise variables
@@ -449,6 +514,13 @@ Start::Start(sf::RenderWindow& win, Configuration& configSets)
     levelOneBtn.setPosition(950, 300);
     levelOneBtn.setFillColor(sf::Color::Green);
 
+    bool saved = Game::hasSavedGame(SAVE_FILE);
+    if (saved) {
+        continueBtn.setSize(sf::Vector2f(200, 50));
+        continueBtn.setPosition(950, 400);
+        continueBtn.setFillColor(sf::Color::Yellow);
+    }
+
     scoreBtn.setSize(sf::Vector2f(200, 50));
     scoreBtn.setPosition(950, 600);
     scoreBtn.setFillColor(sf::Color::Blue);
@@ -477,6 +549,14 @@ Start::Start(sf::RenderWindow& win, Configuration& configSets)
     scoreText.setString("Score");
     scoreText.setPosition(950, 610);
     scoreText.setFillColor(sf::Color::White);
+
+    if (saved) {
+        continueText.setFont(configSets.font);
+        continueText.setCharacterSize(30);
+        continueText.setString("Continue");
+        continueText.setPosition(950, 410);
+        continueText.setFillColor(sf::Color::White);
+    }
 }
 
 // execute pressing buttons
@@ -501,8 +581,9 @@ void Start::LoadFont() {
         case RANDOM_WEDNESDAY:
         case TIMES:
         case VERDANA:
-            if (!configSets.font.loadFromFile(fontFiles[selectedIndex])) {
-                std::cerr << "Error loading font: " << fontFiles[selectedIndex] << "\n";
+            configSets.fontFile = fontFiles[selectedIndex];
+            if (!configSets.font.loadFromFile(configSets.fontFile)) {
+                std::cerr << "Error loading font: " << configSets.fontFile << "\n";
             }
             break;
         default:
@@ -607,18 +688,20 @@ int Start::handleEvents() {
         topicDropdown.handleEvent(event, window);
         wordSizeDropdown.handleEvent(event, window);
 
-        if (event.type == sf::Event::MouseButtonPressed) {
-            sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-            sf::Vector2f mouseF((float )(mousePos.x), (float )(mousePos.y));
-            //Save settings into configSets object
-            configSets.moveSpeed = speedDropdown.getSelectedIndex();
-            configSets.maxWordsLength = wordSizeDropdown.getSelectedIndex();
-            //check buttons click
-            if (levelOneBtn.getGlobalBounds().contains(mouseF))
-                return 1;
-            if (scoreBtn.getGlobalBounds().contains(mouseF))
-                return 0;
-        }
+            if (event.type == sf::Event::MouseButtonPressed) {
+                sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                sf::Vector2f mouseF((float )(mousePos.x), (float )(mousePos.y));
+                //Save settings into configSets object
+                configSets.moveSpeed = speedDropdown.getSelectedIndex();
+                configSets.maxWordsLength = wordSizeDropdown.getSelectedIndex();
+                //check buttons click
+                if (levelOneBtn.getGlobalBounds().contains(mouseF))
+                    return 1;
+                if (Game::hasSavedGame(SAVE_FILE) && continueBtn.getGlobalBounds().contains(mouseF))
+                    return 2;
+                if (scoreBtn.getGlobalBounds().contains(mouseF))
+                    return 0;
+            }
     }
     return -1;
 }
@@ -649,10 +732,14 @@ void Start::draw() { // draw everything
     wordSizeDropdown.draw(window);
 
     window.draw(levelOneBtn);
+    if (Game::hasSavedGame(SAVE_FILE))
+        window.draw(continueBtn);
     window.draw(scoreBtn);
 
     window.draw(levelOneText);
     window.draw(levelTwoText);
+    if (Game::hasSavedGame(SAVE_FILE))
+        window.draw(continueText);
     window.draw(scoreText);
 
     window.display();
